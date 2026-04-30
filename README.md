@@ -1,2 +1,54 @@
-# Webpage-for-WolfBerry-Maturity-Recognition
-本网页设计了一套基于Web的枸杞成熟度检测系统，采用Python语言结合Flask框架实现后端服务，前端界面通过HTML与CSS构建。系统整体架构简洁，功能模块划分清晰，便于用户操作与结果查看，界面布局分为三个功能区域。顶部区域提供模型选择、图片上传和开始检测三个操作按钮，用户可依次完成模型加载与图像输入。中部左侧为可视化展示区，检测完成后将显示带有边界框和置信度标注的果实图像，成熟果实与未成熟果实采用不同颜色区分。中部右侧为检测摘要面板，实时呈现成熟果实数量、总果实数量、成熟比例及平均置信度四项指标，并依据预设阈值给出采摘决策建议。底部区域以表格形式列出每个检测目标的详细信息，包括类别、置信度、成熟度判定及边界框坐标。
+# YOLO Web Detection
+
+This is a simple Flask web app for wolfberry maturity detection.
+
+## Features
+
+- Select a YOLO `.pt` model
+- Upload an image
+- Start detection from the main page
+- Draw bounding boxes and confidence scores on the image
+- Count mature fruits and total fruits
+- Compute mature fruit ratio
+- Output a harvest recommendation
+
+## Decision Rules
+
+- If mature fruit count is below `5`: do not harvest
+- If mature fruit ratio is above `0.65`: harvest recommended
+- If mature fruit ratio is between `0.50` and `0.65`: do not harvest
+- If mature fruit ratio is below `0.50`: do not harvest
+
+## Files
+
+- `app.py`: Flask backend and YOLO inference
+- `templates/index.html`: page structure
+- `static/style.css`: page styling
+- `requirements.txt`: dependencies
+
+## Run
+
+```bash
+cd D:\BIYESHEJI\web_app
+pip install -r requirements.txt
+python app.py
+```
+
+Open this in the browser:
+
+```text
+http://127.0.0.1:5000
+```
+
+## Class Names
+
+The app treats these labels as mature:
+
+- `mature`
+- `ripe`
+
+The app treats these labels as immature:
+
+- `immature`
+
+If your model uses different class names, update the `DetectionItem.is_mature` rule in `app.py`.

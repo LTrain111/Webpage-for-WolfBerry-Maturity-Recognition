@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>枸杞成熟度检测</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="page-shell">
+    <section class="hero-card">
+        <div class="hero-copy">
+            <p class="eyebrow">YOLO Web演示</p>
+            <h1>枸杞成熟度检测</h1>
+            <p class="hero-text">上传YOLO模型和图片。页面将可视化检测结果，显示置信度，计算成熟果实比例，并输出采摘决策。</p>
+        </div>
+
+        <form class="control-panel" action="{{ url_for('detect') }}" method="post" enctype="multipart/form-data">
+            <div class="button-row">
+                <label class="action-button">
+                    <span>选择模型</span>
+                    <input type="file" name="model_file" accept=".pt" hidden>
+                </label>
+
+                <label class="action-button">
+                    <span>上传图片</span>
+                    <input type="file" name="image_file" accept=".jpg,.jpeg,.png,.bmp,.webp" hidden required>
+                </label>
+
+                <button class="action-button solid" type="submit">开始检测</button>
+            </div>
+
+            <div class="status-row">
+                <div class="status-card">
+                    <span class="status-label">当前模型</span>
+                    <strong>{{ model_name }}</strong>
+                </div>
+                <div class="status-card">
+                    <span class="status-label">当前图片</span>
+                    <strong>{{ image_name }}</strong>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    {% if error %}
+    <section class="message error">{{ error }}</section>
+    {% endif %}
+
+    <section class="content-grid">
+        <article class="panel panel-image">
+            <div class="panel-header">
+                <h2>可视化结果</h2>
+                <form action="{{ url_for('reset') }}" method="post">
+                    <button class="ghost-button" type="submit">重置</button>
+                </form>
+            </div>
+            {% if result_image %}
+            <img class="result-image" src="{{ url_for('result_file', filename=result_image) }}" alt="检测结果">
+            {% else %}
+            <div class="placeholder">
+                <p>带有 bounding box 和置信度的检测结果将显示在这里。</p>
+            </div>
+            {% endif %}
+        </article>
+
+        <article class="panel panel-metrics">
+            <div class="panel-header">
+                <h2>检测摘要</h2>
+            </div>
+            {% if summary %}
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span>成熟果实数量</span>
+                    <strong>{{ summary.mature_count }}</strong>
+                </div>
+                <div class="metric-card">
+                    <span>总果实数量</span>
+                    <strong>{{ summary.total_count }}</strong>
+                </div>
+                <div class="metric-card">
+                    <span>成熟果实比例</span>
+                    <strong>{{ summary.mature_ratio }}</strong>
+                </div>
+                <div class="metric-card">
+                    <span>成熟果实平均置信度</span>
+                    <strong>{{ summary.mature_avg_conf }}</strong>
+                </div>
+            </div>
+            <div class="decision-card">
+                <span>采摘决策</span>
+                <strong>{{ summary.decision }}</strong>
+            </div>
+            {% else %}
+            <div class="placeholder compact">
+                <p>请上传模型和图片，然后点击开始检测。</p>
+            </div>
+            {% endif %}
+        </article>
+    </section>
+
+    <section class="panel table-panel">
+        <div class="panel-header">
+            <h2>检测详情</h2>
+        </div>
+        {% if detections %}
+        <table>
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>类别</th>
+                <th>置信度</th>
+                <th>是否成熟</th>
+                <th>边界框</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in detections %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.class_name }}</td>
+                <td>{{ '%.2f'|format(item.confidence) }}</td>
+                <td>{{ '是' if item.is_mature else '否' }}</td>
+                <td>{{ item.xyxy }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="placeholder compact">
+            <p>暂无检测详情。</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+</body>
+</html>
