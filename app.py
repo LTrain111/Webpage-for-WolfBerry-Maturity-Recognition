@@ -122,16 +122,19 @@ def render_visualization(image_path: Path, detections: list[DetectionItem]) -> s
 
 
 def compute_decision(mature_count: int, total_count: int) -> tuple[float, str]:
-    if total_count == 0:
-        return 0.0, "不采摘：未检测到果实。"
-    ratio = mature_count / total_count
+    if mature_count == 0:
+        return 0.0, "未识别到成熟枸杞，当前区域不采摘"
+    ratio = mature_count / total_count if total_count > 0 else 0.0
     if mature_count < MIN_MATURE_COUNT:
-        return ratio, "不采摘：成熟果实数量低于5个。"
-    if ratio > 0.65:
-        return ratio, "建议采摘：成熟果实比例高于0.65。"
-    if 0.5 <= ratio <= 0.65:
-        return ratio, "不采摘：成熟果实比例在0.50到0.65之间。"
-    return ratio, "不采摘：成熟果实比例低于0.50。"
+        if ratio > 0.65:
+            return ratio, "成熟果实较少但成熟度高，建议精准采摘"
+        else:
+            return ratio, "低优先级区域，可局部精准采摘或暂缓采摘"
+    else:
+        if ratio > 0.65:
+            return ratio, "成熟果实充足，建议常规区域采摘"
+        else:
+            return ratio, "成熟果实数量足够但占比偏低，建议精准采摘"
 
 
 def average_confidence(items: list[DetectionItem]) -> float:
